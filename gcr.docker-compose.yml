@@ -1,0 +1,28 @@
+version: "3"
+services:
+  delugesync-local:
+    container_name: delugesync-local
+    image: ghcr.io/plexmation/delugesync:master
+    networks:
+      - delugesync0
+    volumes:
+      - /opt/ProgramData/DelugeSync:/app/files
+    environment:
+      - RabbitMQ__UserName=USERNAME #required
+      - RabbitMQ__Password=PASSWORD #required
+      - RabbitMQ__HostName=HOSTNAME #required
+      - RabbitMQ__VirtualHost=/ #optional
+      - RabbitMQ__Port=5672 #optional
+      - RabbitMQ__Queue=deluge-queue #optional
+      - DownloadProfiles__HTTP__UserName=USERNAME #required
+      - DownloadProfiles__HTTP__Password=PASSWORD #required
+      - DownloadProfiles__HTTP__BaseUrl=https://downloads.mydomain.example/ #required
+      - DownloadProfiles__HTTP__DownloadChunks=16 #optional
+      - DownloadProfiles__HTTP__MaxConnections=1000 #optional
+      - DownloadProfiles__HTTP__ConnectionIdleTimeout=10 #optional
+      - DownloadProfiles__HTTP__ConnectionIdleTimeout=10 #optional
+      - General__LocalSaveLocation=files #optional
+      - General__CreateSubDirectories=true #optional
+networks:
+  delugesync0:
+    driver: bridge
