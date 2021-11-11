@@ -47,7 +47,7 @@ While not a requirement, it will make it easier to filter out downloads in delug
 
 the label names are irrelevant - just make sure your path includes the name of the search profile ie includes "sonarr" or "radarr"
 
-![alt text](https://github.com/Plexmation/DelugeSync/blob/324ed2f6ea7a54d459b957dde00d519e396c58ee/images/deluge-labels.png "Deluge Screenshot")
+![alt text](https://github.com/Plexmation/DelugeSync/blob/16c73f2fc14d6e5b653bc7cdafd28cb026f23976/images/deluge-labels.png "Deluge Screenshot")
 ### Deluge execute - Queue script
 
 ## Client-side/home setup
