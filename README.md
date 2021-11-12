@@ -47,7 +47,7 @@ While not a requirement, it will make it easier to filter out downloads in delug
 
 the label names are irrelevant - just make sure your path includes the name of the search profile ie includes "sonarr" or "radarr"
 
-![alt text](https://github.com/Plexmation/DelugeSync/blob/324ed2f6ea7a54d459b957dde00d519e396c58ee/images/deluge-labels.png "Deluge Screenshot")
+![alt text](https://github.com/Plexmation/DelugeSync/blob/16c73f2fc14d6e5b653bc7cdafd28cb026f23976/images/deluge-labels.png "Deluge Screenshot")
 ### Deluge execute - Queue script
 
 ## Client-side/home setup
@@ -56,8 +56,95 @@ the label names are irrelevant - just make sure your path includes the name of t
 
 Not a fan - here's a [tutorial](https://swimburger.net/blog/dotnet/how-to-run-a-dotnet-core-console-app-as-a-service-using-systemd-on-linux).
 
-### Docker
+### Docker-compose
 
-#### docker run
+#### building locally
+
+```SHELL
+https://github.com/Plexmation/DelugeSync.git
+cd DelugeSync/
+```
+
+Build context is set within the yml, make sure to change capital variables
+
+local.docker-compose.yml source:
+```SHELL
+version: "3"
+services:
+  delugesync-local:
+    container_name: delugesync-local
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    networks:
+      - delugesync1
+    volumes:
+      - /opt/ProgramData/DelugeSync:/app/files
+    environment:
+      - RabbitMQ__UserName=USERNAME #required
+      - RabbitMQ__Password=PASSWORD #required
+      - RabbitMQ__HostName=HOSTNAME #required
+      - RabbitMQ__VirtualHost=/ #optional
+      - RabbitMQ__Port=5672 #optional
+      - RabbitMQ__Queue=deluge-queue #optional
+      - DownloadProfiles__HTTP__UserName=USERNAME #required
+      - DownloadProfiles__HTTP__Password=PASSWORD #required
+      - DownloadProfiles__HTTP__BaseUrl=https://downloads.mydomain.example/ #required
+      - DownloadProfiles__HTTP__DownloadChunks=16 #optional
+      - DownloadProfiles__HTTP__MaxConnections=1000 #optional
+      - DownloadProfiles__HTTP__ConnectionIdleTimeout=10 #optional
+      - DownloadProfiles__HTTP__ConnectionIdleTimeout=10 #optional
+      - General__LocalSaveLocation=files #optional
+      - General__CreateSubDirectories=true #optional
+networks:
+  delugesync1:
+    driver: bridge
+```
+
+build and run:
+```SHELL
+sudo docker-compose -f local.docker-compose.yml up -d
+```
 
 #### docker-compose
+
+```SHELL
+version: "3"
+services:
+  delugesync-local:
+    container_name: delugesync-local
+    image: ghcr.io/plexmation/delugesync:master
+    networks:
+      - delugesync0
+    volumes:
+      - /opt/ProgramData/DelugeSync:/app/files
+    environment:
+      - RabbitMQ__UserName=USERNAME #required
+      - RabbitMQ__Password=PASSWORD #required
+      - RabbitMQ__HostName=HOSTNAME #required
+      - RabbitMQ__VirtualHost=/ #optional
+      - RabbitMQ__Port=5672 #optional
+      - RabbitMQ__Queue=deluge-queue #optional
+      - DownloadProfiles__HTTP__UserName=USERNAME #required
+      - DownloadProfiles__HTTP__Password=PASSWORD #required
+      - DownloadProfiles__HTTP__BaseUrl=https://downloads.mydomain.example/ #required
+      - DownloadProfiles__HTTP__DownloadChunks=16 #optional
+      - DownloadProfiles__HTTP__MaxConnections=1000 #optional
+      - DownloadProfiles__HTTP__ConnectionIdleTimeout=10 #optional
+      - DownloadProfiles__HTTP__ConnectionIdleTimeout=10 #optional
+      - General__LocalSaveLocation=files #optional
+      - General__CreateSubDirectories=true #optional
+networks:
+  delugesync0:
+    driver: bridge
+```
+
+Then run
+```SHELL
+sudo docker-compose up -d
+```
+to get up and running or
+```SHELL
+sudo docker-compose -f gcr.docker-compose.yml up -d
+```
+if you are using the provided compose (remember to change to your variables first)
