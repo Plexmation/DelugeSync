@@ -93,7 +93,6 @@ services:
       - DownloadProfiles__HTTP__DownloadChunks=16 #optional
       - DownloadProfiles__HTTP__MaxConnections=1000 #optional
       - DownloadProfiles__HTTP__ConnectionIdleTimeout=10 #optional
-      - DownloadProfiles__HTTP__ConnectionIdleTimeout=10 #optional
       - General__LocalSaveLocation=files #optional
       - General__CreateSubDirectories=true #optional
 networks:
@@ -130,7 +129,6 @@ services:
       - DownloadProfiles__HTTP__BaseUrl=https://downloads.mydomain.example/ #required
       - DownloadProfiles__HTTP__DownloadChunks=16 #optional
       - DownloadProfiles__HTTP__MaxConnections=1000 #optional
-      - DownloadProfiles__HTTP__ConnectionIdleTimeout=10 #optional
       - DownloadProfiles__HTTP__ConnectionIdleTimeout=10 #optional
       - General__LocalSaveLocation=files #optional
       - General__CreateSubDirectories=true #optional
