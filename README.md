@@ -111,8 +111,8 @@ sudo docker-compose -f local.docker-compose.yml up -d
 ```SHELL
 version: "3"
 services:
-  delugesync-local:
-    container_name: delugesync-local
+  delugesync:
+    container_name: delugesync
     image: ghcr.io/plexmation/delugesync:master
     networks:
       - delugesync0
