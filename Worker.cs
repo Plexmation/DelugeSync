@@ -125,7 +125,7 @@ namespace DelugeSync
                 });
 
                 //need to reject the message from rabbit if it doesn't exist in the profiles
-                if (foundProfile) channel.BasicReject(e.DeliveryTag, false);
+                if (foundProfile == false) channel.BasicReject(e.DeliveryTag, false);
                 //if (message.TorrentPath.ToLower().Contains("sonarr"))
                 //{
                 //    this.StartDownload(message.GetUrl("sonarr", httpProfile.BaseUrl).ToString(), channel, e);
