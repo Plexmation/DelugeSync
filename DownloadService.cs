@@ -107,10 +107,11 @@ namespace DelugeSync
                             {
                                 httpWebResponse.GetResponseStream().CopyTo(fileStream);
                                 tempFilesDictionary.TryAdd((int)index, tempFilePath);
+                                fileStream.Close();
                             }
+                            httpWebResponse.Close();
                         }
                         index++;
-
                     });
 
                     result.ParallelDownloads = index;
@@ -128,6 +129,7 @@ namespace DelugeSync
                     }
                     #endregion
 
+                    destinationStream.Close();
                     return result;
                 }
             } catch (Exception ex)

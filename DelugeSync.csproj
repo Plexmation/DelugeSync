@@ -18,6 +18,5 @@
   <ItemGroup>
     <Folder Include="files\radarr\" />
     <Folder Include="files\sonarr\" />
-    <Folder Include="server\" />
   </ItemGroup>
 </Project>
