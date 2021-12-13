@@ -129,7 +129,10 @@ namespace DelugeSync
                     }
                     #endregion
 
+                    destinationStream.Flush();
                     destinationStream.Close();
+                    destinationStream.Dispose();
+                    
                     return result;
                 }
             } catch (Exception ex)
