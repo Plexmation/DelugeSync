@@ -33,7 +33,6 @@ namespace DelugeSync
                 }
 
                 Uri uri = new Uri(fileUrl);
-                //string destinationFilePath = Path.Combine(destinationFolderPath, uri.Segments.Last());
                 string destinationFilePath = destinationFolderPath;
 
                 DownloadResult result = new DownloadResult() { FilePath = destinationFilePath };
@@ -61,9 +60,9 @@ namespace DelugeSync
                     File.Delete(destinationFilePath);
                 }
 
-                using (FileStream destinationStream = new FileStream(destinationFilePath, FileMode.Append))
+                using (FileStream destinationStream = new FileStream(destinationFilePath, FileMode.Append, FileAccess.Write, FileShare.ReadWrite))
                 {
-                    ConcurrentDictionary<int, string> tempFilesDictionary = new ConcurrentDictionary<int, string>();
+                    ConcurrentDictionary<long, string> tempFilesDictionary = new ConcurrentDictionary<long, string>();
 
                     #region Calculate ranges  
                     List<Range> readRanges = new List<Range>();
@@ -81,7 +80,7 @@ namespace DelugeSync
                     readRanges.Add(new Range()
                     {
                         Start = readRanges.Any() ? readRanges.Last().End + 1 : 0,
-                        End = responseLength - 1
+                        End = responseLength
                     });
 
                     #endregion
@@ -93,23 +92,31 @@ namespace DelugeSync
                     int index = 0;
                     Parallel.ForEach(readRanges, new ParallelOptions() { MaxDegreeOfParallelism = numberOfParallelDownloads }, readRange =>
                     {
-                        HttpWebRequest httpWebRequest = HttpWebRequest.Create(fileUrl) as HttpWebRequest;
-                        httpWebRequest.Method = "GET";
-                        if (credentials != null)
+                        try
                         {
-                            httpWebRequest.Credentials = credentials;
-                        }
-                        httpWebRequest.AddRange(readRange.Start, readRange.End);
-                        using (HttpWebResponse httpWebResponse = httpWebRequest.GetResponse() as HttpWebResponse)
-                        {
-                            string tempFilePath = Path.GetTempFileName();
-                            using (var fileStream = new FileStream(tempFilePath, FileMode.Create, FileAccess.Write, FileShare.Write))
+                            HttpWebRequest httpWebRequest = HttpWebRequest.Create(fileUrl) as HttpWebRequest;
+                            httpWebRequest.Method = "GET";
+                            if (credentials != null)
                             {
-                                httpWebResponse.GetResponseStream().CopyTo(fileStream);
-                                tempFilesDictionary.TryAdd((int)index, tempFilePath);
-                                fileStream.Close();
+                                httpWebRequest.Credentials = credentials;
                             }
-                            httpWebResponse.Close();
+                            httpWebRequest.AddRange(readRange.Start, readRange.End);
+                            using (HttpWebResponse httpWebResponse = httpWebRequest.GetResponse() as HttpWebResponse)
+                            {
+                                //TODO: Create own temp file config
+                                string tempFilePath = Path.GetTempFileName();
+                                using (var fileStream = new FileStream(tempFilePath, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite))
+                                {
+                                    httpWebResponse.GetResponseStream().CopyTo(fileStream);
+                                    var result = tempFilesDictionary.TryAdd(readRange.Start, tempFilePath);
+                                    if (!result) _logger.LogError("Key already exists");
+                                    fileStream.Close();
+                                }
+                                httpWebResponse.Close();
+                            }
+                        } catch (Exception ex)
+                        {
+                            _logger.LogError(ex.ToString());
                         }
                         index++;
                     });
