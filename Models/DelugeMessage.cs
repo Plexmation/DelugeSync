@@ -63,7 +63,6 @@ namespace DelugeSync.Models
         {
             try
             {
-                var subdir = "";
                 var sanUrl = SanitiseEnd(Url);
                 var startIndex = sanUrl.LastIndexOf('/') + 1;
                 var UrlSegments = sanUrl.Split('/');

@@ -67,6 +67,8 @@ namespace DelugeSync
                 DownloadService.IdleConnectionSeconds = httpProfile.ConnectionIdleTimeout;
                 DownloadService.DownloadChunks = httpProfile.DownloadChunks;
                 DownloadService.MaxConnections = httpProfile.MaxConnections;
+                DownloadService.NagleAlgorithm = httpProfile.NagleAlgorithm;
+                DownloadService.BetaOptions = httpProfile.BetaOptions;
                 //map the file profiles to model
                 var fileProfiles = _configuration.GetSection("DownloadProfiles:HTTP:FileProfiles").GetChildren();
                 foreach (var section in fileProfiles)
@@ -120,26 +122,12 @@ namespace DelugeSync
                     if (message.TorrentPath.ToLower().Contains(x.searchCriteria))
                     {
                         foundProfile = true;
-                        this.StartDownload(message.GetUrl(x.searchCriteria, httpProfile.BaseUrl).ToString(), x, channel, e);
+                        StartDownload(message.GetUrl(x.searchCriteria, httpProfile.BaseUrl).ToString(), x, channel, e);
                     }
                 });
 
                 //need to reject the message from rabbit if it doesn't exist in the profiles
                 if (foundProfile == false) channel.BasicReject(e.DeliveryTag, false);
-                //if (message.TorrentPath.ToLower().Contains("sonarr"))
-                //{
-                //    this.StartDownload(message.GetUrl("sonarr", httpProfile.BaseUrl).ToString(), channel, e);
-                //}
-                //else if (message.TorrentPath.ToLower().Contains("radarr"))
-                //{
-                //    this.StartDownload(message.GetUrl("sonarr", httpProfile.BaseUrl).ToString(), channel, e);
-                //}
-                //else
-                //{
-                //    some other file, not sonarr/ radarr
-                //    _logger.LogInformation("Message not found in profiles, discarding it");
-                //    channel.BasicReject(e.DeliveryTag, false);
-                //}
             }
             catch (Exception ex)
             {
@@ -149,10 +137,10 @@ namespace DelugeSync
 
         }
 
-        private void StartDownload(string url,FileProfileSetting fileProfile, IModel channel, BasicDeliverEventArgs eventArgs)
+        private async Task StartDownload(string url,FileProfileSetting fileProfile, IModel channel, BasicDeliverEventArgs eventArgs)
         {
             var filename = DelugeMessage.GetFilenameFromDownloadUrl(url, localSaveLocation, fileProfile.searchCriteria, createSubDirectories);
-            var result = DownloadService.Download(fileUrl: url, destinationFolderPath: filename, numberOfParallelDownloads: httpProfile.DownloadChunks, credentials: httpCredentials);
+            var result = await DownloadService.DownloadAsync(fileUrl: url, destinationFolderPath: filename, numberOfParallelDownloads: httpProfile.DownloadChunks, credentials: httpCredentials);
             if (result == null)
             {
                 _logger.LogError($"download has failed");

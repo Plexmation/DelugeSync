@@ -10,6 +10,8 @@ namespace DelugeSync.Models
         public string BaseUrl { get; set; }
         public int DownloadChunks { get; set; }
         public int MaxConnections { get; set; }
+        public bool NagleAlgorithm { get; set; }
+        public bool BetaOptions { get; set; }
         public int ConnectionIdleTimeout { get; set; }
         public List<FileProfileSetting>? FileProfiles { get; set; }
     }

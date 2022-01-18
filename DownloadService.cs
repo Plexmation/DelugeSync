@@ -16,13 +16,23 @@ namespace DelugeSync
         public static int IdleConnectionSeconds = 10;
         public static int DownloadChunks = 4;
         public static int MaxConnections = 8;
+        public static bool NagleAlgorithm = true; //enabled by default
+
+        //beta options
+        public static bool BetaOptions = false;
+        public static bool UnsafeAuthenticatedConnectionSharing = true;
+        public static bool PreAuthenticate = true;
+        public static bool AllowWriteStreamBuffering = false;
+        public static bool Pipelined = false;
         static DownloadService()
         {
             ServicePointManager.Expect100Continue = false;
+            ServicePointManager.UseNagleAlgorithm = NagleAlgorithm;
             ServicePointManager.DefaultConnectionLimit = MaxConnections;
             ServicePointManager.MaxServicePointIdleTime = (IdleConnectionSeconds * 1000);
+            //ServicePointManager.ReusePort = false;
         }
-        public static DownloadResult Download(string fileUrl, string destinationFolderPath, int numberOfParallelDownloads = 0, bool validateSSL = false, NetworkCredential credentials = null)
+        public static async Task<DownloadResult> DownloadAsync(string fileUrl, string destinationFolderPath, int numberOfParallelDownloads = 0, bool validateSSL = false, NetworkCredential credentials = null)
         {
             try
             {
@@ -90,29 +100,35 @@ namespace DelugeSync
                     #region Parallel download  
 
                     int index = 0;
-                    Parallel.ForEach(readRanges, new ParallelOptions() { MaxDegreeOfParallelism = numberOfParallelDownloads }, readRange =>
+                    await Parallel.ForEachAsync(readRanges, new ParallelOptions() { MaxDegreeOfParallelism = numberOfParallelDownloads }, async (readRange, cancellationToken) =>
                     {
                         try
                         {
                             HttpWebRequest httpWebRequest = HttpWebRequest.Create(fileUrl) as HttpWebRequest;
                             httpWebRequest.Method = "GET";
+                            httpWebRequest.Proxy = null;
+                            if (BetaOptions)
+                            {
+                                httpWebRequest.UnsafeAuthenticatedConnectionSharing = UnsafeAuthenticatedConnectionSharing;
+                                httpWebRequest.PreAuthenticate = PreAuthenticate;
+                                httpWebRequest.AllowWriteStreamBuffering = AllowWriteStreamBuffering;
+                                httpWebRequest.Pipelined = Pipelined;
+    }
                             if (credentials != null)
                             {
                                 httpWebRequest.Credentials = credentials;
                             }
                             httpWebRequest.AddRange(readRange.Start, readRange.End);
-                            using (HttpWebResponse httpWebResponse = httpWebRequest.GetResponse() as HttpWebResponse)
+                            using (HttpWebResponse httpWebResponse = await httpWebRequest.GetResponseAsync() as HttpWebResponse)
                             {
                                 //TODO: Create own temp file config
                                 string tempFilePath = Path.GetTempFileName();
                                 using (var fileStream = new FileStream(tempFilePath, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite))
                                 {
-                                    httpWebResponse.GetResponseStream().CopyTo(fileStream);
+                                    await httpWebResponse.GetResponseStream().CopyToAsync(fileStream);
                                     var result = tempFilesDictionary.TryAdd(readRange.Start, tempFilePath);
                                     if (!result) _logger.LogError("Key already exists");
-                                    fileStream.Close();
                                 }
-                                httpWebResponse.Close();
                             }
                         } catch (Exception ex)
                         {
@@ -120,7 +136,6 @@ namespace DelugeSync
                         }
                         index++;
                     });
-
                     result.ParallelDownloads = index;
 
                     #endregion
@@ -136,9 +151,8 @@ namespace DelugeSync
                     }
                     #endregion
 
-                    destinationStream.Flush();
-                    destinationStream.Close();
-                    destinationStream.Dispose();
+                    await destinationStream.FlushAsync();
+                    await destinationStream.DisposeAsync();
                     
                     return result;
                 }
