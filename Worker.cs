@@ -29,6 +29,8 @@ namespace DelugeSync
         private string localSaveLocation;
         private bool createSubDirectories;
 
+        private int queueTimeout = 36000000;
+
         public Worker(ILogger<Worker> logger, IConfiguration configuration)
         {
             _logger = logger;
@@ -48,11 +50,15 @@ namespace DelugeSync
             };
             _connection = _connectionFactory.CreateConnection();
             _channel = _connection.CreateModel();
+            //rabbit args
+            var rabbitArgs = new Dictionary<string, object>();
+            queueTimeout = int.Parse(_configuration["RabbitMQ:RequeueTimeout"]) * 1000;
+            rabbitArgs.Add("x-message-ttl", queueTimeout);
             _channel.QueueDeclare(_configuration["RabbitMQ:Queue"].ToString(),
                 durable: true,
                 exclusive: false,
                 autoDelete: false,
-                arguments: null);
+                arguments: rabbitArgs);
             _channel.BasicQos(0, 1, false);
             #endregion
 
