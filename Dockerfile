@@ -18,4 +18,9 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 
-ENTRYPOINT ["dotnet", "DelugeSync.dll"]
+RUN addgroup --system --gid 1000 customgroup \
+    && adduser --system --uid 1000 --ingroup customgroup --shell /bin/sh customuser
+RUN chown customuser:customgroup -R /src
+RUN chown customuser:customgroup -R /app
+
+CMD ["dotnet", "DelugeSync.dll"]
