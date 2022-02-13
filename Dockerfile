@@ -20,6 +20,6 @@ USER 1000
 
 FROM base AS final
 WORKDIR /app
-COPY --from=publish /app/publish .
+COPY --chown=customuser:customgroup --from=publish /app/publish .
 
 ENTRYPOINT ["dotnet", "DelugeSync.dll"]
