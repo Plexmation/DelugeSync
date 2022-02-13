@@ -20,6 +20,7 @@ COPY --from=publish /app/publish .
 
 RUN addgroup --system --gid 1000 customgroup \
     && adduser --system --uid 1000 --ingroup customgroup --shell /bin/sh customuser
+RUN mkdir -p /app/files
 RUN chown customuser:customgroup -R /app
 
 USER customuser:customgroup
