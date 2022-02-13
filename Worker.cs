@@ -128,7 +128,8 @@ namespace DelugeSync
                     if (message.TorrentPath.ToLower().Contains(x.searchCriteria))
                     {
                         foundProfile = true;
-                        StartDownload(message.GetUrl(x.searchCriteria, httpProfile.BaseUrl).ToString(), x, channel, e);
+                        var url = message.GetUrl(x.searchCriteria, httpProfile.BaseUrl).ToString();
+                        StartDownload(url, x, channel, e);
                     }
                 });
 
@@ -145,19 +146,27 @@ namespace DelugeSync
 
         private async Task StartDownload(string url,FileProfileSetting fileProfile, IModel channel, BasicDeliverEventArgs eventArgs)
         {
-            var filename = DelugeMessage.GetFilenameFromDownloadUrl(url, localSaveLocation, fileProfile.searchCriteria, createSubDirectories);
-            var result = await DownloadService.DownloadAsync(fileUrl: url, destinationFolderPath: filename, numberOfParallelDownloads: httpProfile.DownloadChunks, credentials: httpCredentials);
-            if (result == null)
+            try
             {
-                _logger.LogError($"download has failed");
-                channel.BasicReject(deliveryTag: eventArgs.DeliveryTag, true);
-            } else
+                var filename = DelugeMessage.GetFilenameFromDownloadUrl(url, localSaveLocation, fileProfile.searchCriteria, createSubDirectories);
+                var result = await DownloadService.DownloadAsync(fileUrl: url, destinationFolderPath: filename, numberOfParallelDownloads: httpProfile.DownloadChunks, credentials: httpCredentials);
+                if (result == null)
+                {
+                    _logger.LogError($"download has failed");
+                    channel.BasicReject(deliveryTag: eventArgs.DeliveryTag, true);
+                }
+                else
+                {
+                    _logger.LogInformation($"Download completed in {result.TimeTaken.Seconds}s");
+                    _logger.LogInformation($"File Path: {result.FilePath}");
+                    _logger.LogInformation($"Parallel: {result.ParallelDownloads}");
+                    _logger.LogInformation($"Size: {result.Size} bytes");
+                    channel.BasicAck(deliveryTag: eventArgs.DeliveryTag, multiple: false);
+                }
+            } catch (Exception ex)
             {
-                _logger.LogInformation($"Download completed in {result.TimeTaken.Seconds}s");
-                _logger.LogInformation($"File Path: {result.FilePath}");
-                _logger.LogInformation($"Parallel: {result.ParallelDownloads}");
-                _logger.LogInformation($"Size: {result.Size} bytes");
-                channel.BasicAck(deliveryTag: eventArgs.DeliveryTag, multiple: false);
+                _logger.LogError(ex.Message + "\n" + ex.StackTrace);
+                throw ex;
             }
         }
         public override async Task StopAsync(CancellationToken cancellationToken)

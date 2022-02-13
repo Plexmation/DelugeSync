@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -20,12 +21,34 @@ namespace DelugeSync.Models
             {
                 if (TorrentPath.Contains(searchRef))
                 {
-                    var startIndex = TorrentPath.IndexOf(searchRef) + searchRef.Length;
-                    var lengthIndex = TorrentPath.Length - startIndex;
-                    var location = TorrentPath.Substring(startIndex,lengthIndex);
-                    //TODO: might need to add filename - will check on amqp-publish side
-                    var fullLink = new Uri(SanitiseEnd(baseUrl) + $"/{searchRef}/" + location);
-                    return fullLink;
+                    var splitPath = TorrentPath.Split('/').ToList();
+                    var urlList = new List<string>();
+                    if (splitPath.Count > 0)
+                    {
+                        var foundIndex = splitPath.IndexOf(searchRef);
+                        var location = "";
+                        foreach (var (item, index) in splitPath.Select((value, i) => (value, i)))
+                        {
+                            if (index > foundIndex)
+                            {
+                                urlList.Add(item);
+                            }
+                        }
+
+                        urlList.ForEach(item => location += item + "/");
+
+                        location = location.Remove(location.Count() - 1, 1);
+
+                        //still need the filename to be append here
+
+                        var fullLink = new Uri(SanitiseEnd(baseUrl) + $"/{searchRef}/" + location);
+                        return fullLink;
+                    } else
+                    {
+                        _logger.LogError("Could not split recieved path");
+                        return null;
+                    }
+                    
                 }
                 else
                 {
@@ -45,19 +68,6 @@ namespace DelugeSync.Models
                 url = url.Remove(url.Length - 1);
             }
             return url;
-        }
-
-        public string GetFilename(string baseLocation)
-        {
-            try
-            {
-                var startIndex = TorrentPath.LastIndexOf('/') + 1;
-                return SanitiseEnd(baseLocation) + "/" + TorrentPath.Substring(startIndex, TorrentPath.Length - startIndex);
-            } catch (Exception ex)
-            {
-                _logger.LogError("The following exception ocurred while trying to parse the filename:\n" + ex.Message);
-                return null;
-            }
         }
         public static string GetFilenameFromDownloadUrl(string Url, string baseLocation, string searchCriteria, bool includeFolder = false)
         {
