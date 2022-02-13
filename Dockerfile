@@ -3,20 +3,20 @@
 FROM mcr.microsoft.com/dotnet/runtime:6.0 AS base
 WORKDIR /app
 
+RUN addgroup --system --gid 1000 customgroup \
+    && adduser --system --uid 1000 --ingroup customgroup --shell /bin/sh customuser
+USER 1000
+
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
-COPY ["DelugeSync.csproj", "."]
+COPY --chown=customuser:customgroup ["DelugeSync.csproj", "."]
 RUN dotnet restore "./DelugeSync.csproj"
-COPY . .
+COPY --chown=customuser:customgroup . .
 WORKDIR "/src/."
 RUN dotnet build "DelugeSync.csproj" -c Release -o /app/build
 
 FROM build AS publish
 RUN dotnet publish "DelugeSync.csproj" -c Release -o /app/publish
-
-RUN addgroup --system --gid 1000 customgroup \
-    && adduser --system --uid 1000 --ingroup customgroup --shell /bin/sh customuser
-USER 1000
 
 FROM base AS final
 WORKDIR /app
