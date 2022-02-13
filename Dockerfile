@@ -21,5 +21,6 @@ COPY --from=publish /app/publish .
 RUN addgroup --system --gid 1000 customgroup \
     && adduser --system --uid 1000 --ingroup customgroup --shell /bin/sh customuser
 USER 1000
+RUN chown customuser:customgroup /app
 
 ENTRYPOINT ["dotnet", "DelugeSync.dll"]
