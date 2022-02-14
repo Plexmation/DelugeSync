@@ -20,7 +20,7 @@ COPY --from=publish /app/publish .
 ARG USER_ID
 ARG GROUP_ID
 
-RUN addgroup --gid $GROUP_ID user
+RUN addgroup --force-badname --gid $GROUP_ID user
 RUN adduser --disabled-password --gecos '' --uid $USER_ID --gid $GROUP_ID user
 USER user
 CMD ["dotnet", "DelugeSync.dll"]
