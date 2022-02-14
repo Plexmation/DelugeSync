@@ -18,5 +18,5 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 ENV UMASK=022
-RUN UMASK ${UMASK}
+RUN UMASK $UMASK
 ENTRYPOINT ["dotnet", "DelugeSync.dll"]
