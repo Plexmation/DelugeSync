@@ -15,6 +15,8 @@ FROM build AS publish
 RUN dotnet publish "DelugeSync.csproj" -c Release -o /app/publish
 
 FROM base AS final
+WORKDIR /app
+COPY --from=publish /app/publish .
 
 RUN addgroup --system --gid 1000 customgroup \
     && adduser --system --uid 1000 --ingroup customgroup --shell /bin/sh customuser
@@ -24,8 +26,5 @@ RUN chmod 776 -R /app/files/
 
 USER customuser:customgroup
 VOLUME ["/app/files"]
-
-WORKDIR /app
-COPY --from=publish /app/publish .
 
 CMD ["dotnet", "DelugeSync.dll"]
