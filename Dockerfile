@@ -17,6 +17,6 @@ RUN dotnet publish "DelugeSync.csproj" -c Release -o /app/publish
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ARG UMASK 022
-RUN UMASK $UMASK
+#ARG UMASK 022
+RUN UMASK 022
 ENTRYPOINT ["dotnet", "DelugeSync.dll"]
