@@ -31,6 +31,6 @@ COPY ["entrypoint.sh", "/entrypoint.sh"]
 #ENTRYPOINT ["/bin/sh", "/entrypoint.sh"]
 RUN useradd --create-home appuser
 RUN mkdir -p /app/files
-RUN mkdir -p /app/files/sonarr
-RUN mkdir -p /app/files/radarr
+#RUN mkdir -p /app/files/sonarr
+#RUN mkdir -p /app/files/radarr
 ENTRYPOINT ["dotnet", "DelugeSync.dll"]
