@@ -17,10 +17,6 @@ RUN dotnet publish "DelugeSync.csproj" -c Release -o /app/publish
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ARG USER_ID
-ARG GROUP_ID
-
-RUN addgroup --force-badname --gid $GROUP_ID user
-RUN adduser --disabled-password --gecos '' --uid $USER_ID --gid $GROUP_ID user
-USER user
-CMD ["dotnet", "DelugeSync.dll"]
+ENV UMASK=022
+RUN UMASK ${UMASK}
+ENTRYPOINT ["dotnet", "DelugeSync.dll"]
