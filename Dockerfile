@@ -26,7 +26,9 @@ COPY --from=publish /app/publish .
 
 #USER customuser:customgroup
 #VOLUME ["/app/files"]
+RUN addgroup --system --gid 1000 customgroup
+RUN adduser --system --uid 1000 --ingroup customgroup
 COPY ["entrypoint.sh", "/entrypoint.sh"]
 ENTRYPOINT ["/bin/sh", "/entrypoint.sh"]
-USER customuser:customgroup
+#USER customuser:customgroup
 CMD ["dotnet", "DelugeSync.dll"]
