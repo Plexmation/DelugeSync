@@ -18,13 +18,17 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 
-RUN addgroup --system --gid 1000 customgroup \
-    && adduser --system --uid 1000 --ingroup customgroup --shell /bin/sh customuser
-RUN mkdir -p /app/files
-RUN chown 1000:100 -R /app
+RUN addgroup --gid 1000 docker && \
+    adduser --uid 1000 --ingroup docker --home /home/docker --shell /bin/sh --disabled-password --gecos "" docker
+RUN USER=docker && \
+    GROUP=docker && \
+    curl -SsL https://github.com/boxboat/fixuid/releases/download/v0.5.1/fixuid-0.5.1-linux-amd64.tar.gz | tar -C /usr/local/bin -xzf - && \
+    chown root:root /usr/local/bin/fixuid && \
+    chmod 4755 /usr/local/bin/fixuid && \
+    mkdir -p /etc/fixuid && \
+    printf "user: $USER\ngroup: $GROUP\npaths:\n  - /app" > /etc/fixuid/config.yml
 
-USER customuser:customgroup
-
-VOLUME ["/app/files"]
+USER docker:docker
+ENTRYPOINT ["fixuid"]
 
 CMD ["dotnet", "DelugeSync.dll"]
