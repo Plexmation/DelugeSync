@@ -28,5 +28,5 @@ COPY --from=publish /app/publish .
 #VOLUME ["/app/files"]
 COPY ["entrypoint.sh", "/entrypoint.sh"]
 ENTRYPOINT ["/bin/sh", "/entrypoint.sh"]
-
+USER customuser:customgroup
 CMD ["dotnet", "DelugeSync.dll"]
