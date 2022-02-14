@@ -18,14 +18,14 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 
-RUN addgroup --system --gid 1000 customgroup \
-    && adduser --system --uid 1000 --ingroup customgroup --shell /bin/sh customuser
-RUN mkdir -p /app/files
-RUN chown 1000:1000 -R /app
-RUN chmod 776 -R /app/files/
+#RUN addgroup --system --gid 1000 customgroup \
+#    && adduser --system --uid 1000 --ingroup customgroup --shell /bin/sh customuser
+#RUN mkdir -p /app/files
+#RUN chown 1000:1000 -R /app
+#RUN chmod 776 -R /app/files/
 
-USER customuser:customgroup
-VOLUME ["/app/files"]
+#USER customuser:customgroup
+#VOLUME ["/app/files"]
 COPY ["entrypoint.sh", "/entrypoint.sh"]
 ENTRYPOINT ["/bin/sh", "/entrypoint.sh"]
 
