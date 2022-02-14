@@ -29,4 +29,4 @@ COPY --from=publish /app/publish .
 #COPY ["entrypoint.sh", "/entrypoint.sh"]
 #ENTRYPOINT ["/bin/sh", "/entrypoint.sh"]
 
-CMD ["dotnet", "DelugeSync.dll"]
+ENTRYPOINT ["dotnet", "DelugeSync.dll"]
