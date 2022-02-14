@@ -33,5 +33,4 @@ RUN useradd --create-home appuser
 RUN mkdir -p /app/files
 RUN mkdir -p /app/files/sonarr
 RUN mkdir -p /app/files/radarr
-USER appuser
-CMD ["dotnet", "DelugeSync.dll"]
+ENTRYPOINT ["dotnet", "DelugeSync.dll"]
