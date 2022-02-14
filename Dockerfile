@@ -28,7 +28,7 @@ COPY --from=publish /app/publish .
 #VOLUME ["/app/files"]
 
 COPY ["entrypoint.sh", "/entrypoint.sh"]
-ENTRYPOINT ["/bin/sh", "/entrypoint.sh"]
+#ENTRYPOINT ["/bin/sh", "/entrypoint.sh"]
 RUN useradd --create-home appuser
 USER appuser
 CMD ["dotnet", "DelugeSync.dll"]
