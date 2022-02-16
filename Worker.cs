@@ -27,6 +27,7 @@ namespace DelugeSync
         private HttpProfileSetting httpProfile;
         private NetworkCredential httpCredentials = new NetworkCredential();
         private string localSaveLocation;
+        private string tempSaveLocation;
         private bool createSubDirectories;
 
         private int queueTimeout = 36000000;
@@ -63,8 +64,10 @@ namespace DelugeSync
             #endregion
 
             localSaveLocation = _configuration["General:LocalSaveLocation"].ToString();
+            tempSaveLocation = _configuration["General:TempSaveLocation"].ToString();
             createSubDirectories = _configuration.GetValue<bool>("General:CreateSubDirectories");
             if (!Directory.Exists(localSaveLocation)) Directory.CreateDirectory(localSaveLocation);
+            if (!Directory.Exists(tempSaveLocation)) Directory.CreateDirectory(tempSaveLocation);
 
             #region Http Profile(s)
             if (_configuration["DownloadProfiles:HTTP:Enabled"].ToLower().ToString() == "true") {
@@ -82,6 +85,8 @@ namespace DelugeSync
                     httpProfile.FileProfiles.Add(new FileProfileSetting { searchCriteria = section.Key, saveLocationRelative = section.Value });
                     //create the folders
                     var filePath = localSaveLocation + $"/{section.Value}";
+                    var tempPath = tempSaveLocation + $"/{section.Value}";
+                    if (!Directory.Exists(filePath)) Directory.CreateDirectory(filePath);
                     if (!Directory.Exists(filePath)) Directory.CreateDirectory(filePath);
                 }
             }
@@ -149,7 +154,8 @@ namespace DelugeSync
             try
             {
                 var filename = DelugeMessage.GetFilenameFromDownloadUrl(url, localSaveLocation, fileProfile.searchCriteria, createSubDirectories);
-                var result = await DownloadService.DownloadAsync(fileUrl: url, destinationFolderPath: filename, numberOfParallelDownloads: httpProfile.DownloadChunks, credentials: httpCredentials);
+                var tempFilename = DelugeMessage.GetFilenameFromDownloadUrl(url, tempSaveLocation, fileProfile.searchCriteria, createSubDirectories);
+                var result = await DownloadService.DownloadAsync(fileUrl: url, destinationFolderPath: filename, numberOfParallelDownloads: httpProfile.DownloadChunks, credentials: httpCredentials, tempFolderPath: tempFilename);
                 if (result == null)
                 {
                     _logger.LogError($"download has failed");

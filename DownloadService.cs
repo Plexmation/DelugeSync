@@ -32,7 +32,7 @@ namespace DelugeSync
             ServicePointManager.MaxServicePointIdleTime = (IdleConnectionSeconds * 1000);
             //ServicePointManager.ReusePort = false;
         }
-        public static async Task<DownloadResult> DownloadAsync(string fileUrl, string destinationFolderPath, int numberOfParallelDownloads = 0, bool validateSSL = false, NetworkCredential credentials = null)
+        public static async Task<DownloadResult> DownloadAsync(string fileUrl, string destinationFolderPath, int numberOfParallelDownloads = 0, bool validateSSL = false, NetworkCredential credentials = null, string tempFolderPath = null)
         {
             try
             {
@@ -43,7 +43,14 @@ namespace DelugeSync
                 }
 
                 Uri uri = new Uri(fileUrl);
-                string destinationFilePath = destinationFolderPath;
+                string destinationFilePath;
+                if (!string.IsNullOrEmpty(tempFolderPath))
+                {
+                    destinationFilePath = tempFolderPath;
+                } else
+                {
+                    destinationFilePath = destinationFolderPath;
+                }
 
                 DownloadResult result = new DownloadResult() { FilePath = destinationFilePath };
 
@@ -148,6 +155,19 @@ namespace DelugeSync
                         byte[] tempFileBytes = File.ReadAllBytes(tempFile.Value);
                         destinationStream.Write(tempFileBytes, 0, tempFileBytes.Length);
                         File.Delete(tempFile.Value);
+                    }
+                    #endregion
+
+                    #region move to real location if temp file location is specified
+                    if (!string.IsNullOrEmpty(tempFolderPath))
+                    {
+                        try
+                        {
+                            File.Move(destinationFilePath, destinationFolderPath, true);
+                        } catch (Exception ex)
+                        {
+                            _logger.LogError($"Failed to move file: {ex.ToString()}");
+                        }
                     }
                     #endregion
 

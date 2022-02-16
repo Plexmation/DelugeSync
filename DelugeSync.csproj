@@ -18,5 +18,6 @@
   <ItemGroup>
     <Folder Include="files\radarr\" />
     <Folder Include="files\sonarr\" />
+    <Folder Include="temp\sonarr\" />
   </ItemGroup>
 </Project>
