@@ -37,6 +37,14 @@ namespace DelugeSync
         }
         public override Task StartAsync(CancellationToken cancellationToken)
         {
+
+            var startUpDelayStr = _configuration["StartUpDelay"];
+            if (!string.IsNullOrEmpty(startUpDelayStr))
+            {
+                var sleepInSeconds = int.Parse(startUpDelayStr);
+                System.Threading.Thread.Sleep(sleepInSeconds * 1000);
+            }
+
             #region Rabbit
             _connectionFactory = new ConnectionFactory()
             {
