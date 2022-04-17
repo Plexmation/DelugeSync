@@ -169,10 +169,13 @@ namespace DelugeSync
                 }
                 else
                 {
-                    _logger.LogInformation($"Download completed in {result.TimeTaken.Seconds}s");
-                    _logger.LogInformation($"File Path: {result.FilePath}");
-                    _logger.LogInformation($"Parallel: {result.ParallelDownloads}");
-                    _logger.LogInformation($"Size: {result.Size} bytes");
+                    _logger.LogInformation($"Download completed in {result.TimeTaken.Seconds}s" +
+                        $"\nFile Path: {result.FilePath}" +
+                        $"\nParallel: {result.ParallelDownloads}" +
+                        $"\nSize: {Math.Round((double) (result.Size / 1000000),2)} MB");
+                    //_logger.LogInformation($"File Path: {result.FilePath}");
+                    //_logger.LogInformation($"Parallel: {result.ParallelDownloads}");
+                    //_logger.LogInformation($"Size: {result.Size} bytes");
                     channel.BasicAck(deliveryTag: eventArgs.DeliveryTag, multiple: false);
                 }
             } catch (Exception ex)
