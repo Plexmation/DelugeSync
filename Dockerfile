@@ -8,7 +8,6 @@ WORKDIR /src
 COPY ["DelugeSync.csproj", "."]
 RUN dotnet restore "./DelugeSync.csproj"
 COPY . .
-WORKDIR "/src/."
 RUN dotnet build "DelugeSync.csproj" -c Release -o /app/build
 
 FROM build AS publish
@@ -17,5 +16,6 @@ RUN dotnet publish "DelugeSync.csproj" -c Release -o /app/publish
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+COPY server/ server/.
 
 ENTRYPOINT ["dotnet", "DelugeSync.dll"]
