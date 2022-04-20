@@ -17,5 +17,6 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 COPY server/ server/.
+RUN chmod -R 755 server
 
 ENTRYPOINT ["dotnet", "DelugeSync.dll"]
