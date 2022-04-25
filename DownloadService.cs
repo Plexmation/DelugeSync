@@ -77,7 +77,7 @@ namespace DelugeSync
                     File.Delete(destinationFilePath);
                 }
 
-                using (FileStream destinationStream = new FileStream(destinationFilePath, FileMode.Append, FileAccess.Write, FileShare.ReadWrite))
+                using (FileStream destinationStream = new FileStream(destinationFilePath, FileMode.Append, FileAccess.ReadWrite, FileShare.ReadWrite))
                 {
                     ConcurrentDictionary<long, string> tempFilesDictionary = new ConcurrentDictionary<long, string>();
 
