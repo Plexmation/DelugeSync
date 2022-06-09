@@ -140,7 +140,12 @@ namespace DelugeSync
                     {
                         foundProfile = true;
                         var url = message.GetUrl(x.searchCriteria, httpProfile.BaseUrl).ToString();
-                        StartDownload(url, x, channel, e);
+                        bool subdir = createSubDirectories;
+                        if (message.IsSingle != null && message.IsSingle == true)
+                        {
+                            subdir = false;
+                        }
+                        StartDownload(url, x, channel, e, subdir);
                     }
                 });
 
@@ -155,12 +160,12 @@ namespace DelugeSync
 
         }
 
-        private async Task StartDownload(string url,FileProfileSetting fileProfile, IModel channel, BasicDeliverEventArgs eventArgs)
+        private async Task StartDownload(string url,FileProfileSetting fileProfile, IModel channel, BasicDeliverEventArgs eventArgs, bool createSubDir)
         {
             try
             {
-                var filename = DelugeMessage.GetFilenameFromDownloadUrl(url, localSaveLocation, fileProfile.searchCriteria, createSubDirectories);
-                var tempFilename = DelugeMessage.GetFilenameFromDownloadUrl(url, tempSaveLocation, fileProfile.searchCriteria, createSubDirectories);
+                var filename = DelugeMessage.GetFilenameFromDownloadUrl(url, localSaveLocation, fileProfile.searchCriteria, createSubDir);
+                var tempFilename = DelugeMessage.GetFilenameFromDownloadUrl(url, tempSaveLocation, fileProfile.searchCriteria, createSubDir);
                 var result = await DownloadService.DownloadAsync(fileUrl: url, destinationFolderPath: filename, numberOfParallelDownloads: httpProfile.DownloadChunks, credentials: httpCredentials, tempFolderPath: tempFilename);
                 if (result == null)
                 {

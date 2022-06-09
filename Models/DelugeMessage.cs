@@ -14,6 +14,7 @@ namespace DelugeSync.Models
         public string TorrentId { get; set; }
         public string TorrentName { get; set; }
         public string TorrentPath { get; set; }
+        public bool? IsSingle { get; set; }
 
         public Uri GetUrl(string searchRef, string baseUrl)
         {
@@ -79,7 +80,7 @@ namespace DelugeSync.Models
                 var newUrl = "";
                 if (includeFolder)
                 {
-                    string subDirectory = SanitiseEnd(baseLocation) + $"/{searchCriteria}/{UrlSegments[UrlSegments.Length - 2]}/";
+                    string subDirectory = SanitiseEnd(baseLocation) + $"/{searchCriteria}/";
                     newUrl = subDirectory + sanUrl.Substring(startIndex, sanUrl.Length - startIndex);
                     if (!Directory.Exists(subDirectory)) Directory.CreateDirectory(subDirectory); 
                 }

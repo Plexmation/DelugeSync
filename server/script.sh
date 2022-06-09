@@ -20,7 +20,8 @@ send_to_rabbit() {
     json='{
         "TorrentID": "'"$torrentId"'",
         "TorrentName": "'"$torrentName"'",
-        "TorrentPath": "'"$1"'"
+        "TorrentPath": "'"$1"'",
+        "IsSingle": "'"$2"'"
     }'
     echo "$json" >> import.log
 
@@ -48,5 +49,5 @@ then
     done
 else
     echo "single file src ${srcPath} dst ${destPath}" >> rar.log
-    send_to_rabbit $srcPath
+    send_to_rabbit $srcPath true
 fi
