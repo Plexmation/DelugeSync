@@ -48,5 +48,5 @@ then
     done
 else
     echo "single file src ${srcPath} dst ${destPath}" >> rar.log
-    send_to_rabbit $destPath
+    send_to_rabbit $srcPath
 fi
