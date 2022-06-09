@@ -36,9 +36,9 @@ namespace DelugeSync
         {
             try
             {
-                _logger.LogInformation("Starting download...");
                 if (!validateSSL)
                 {
+                    _logger.LogInformation("Validating SSL");
                     ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
                 }
 
@@ -60,6 +60,7 @@ namespace DelugeSync
                     numberOfParallelDownloads = DownloadChunks;
                 }
 
+                _logger.LogInformation("Requesting file information from server");
                 #region Get file size  
                 WebRequest webRequest = HttpWebRequest.Create(fileUrl);
                 webRequest.Method = "HEAD";
@@ -81,6 +82,7 @@ namespace DelugeSync
                 {
                     ConcurrentDictionary<long, string> tempFilesDictionary = new ConcurrentDictionary<long, string>();
 
+                    _logger.LogInformation("Calculating ranges");
                     #region Calculate ranges  
                     List<Range> readRanges = new List<Range>();
                     for (int chunk = 0; chunk < numberOfParallelDownloads - 1; chunk++)
@@ -104,6 +106,7 @@ namespace DelugeSync
 
                     DateTime startTime = DateTime.Now;
 
+                    _logger.LogInformation("Starting download...");
                     #region Parallel download  
 
                     int index = 0;
@@ -149,6 +152,7 @@ namespace DelugeSync
 
                     result.TimeTaken = DateTime.Now.Subtract(startTime);
 
+                    _logger.LogInformation("Merging chunks");
                     #region Merge to single file  
                     foreach (var tempFile in tempFilesDictionary.OrderBy(b => b.Key))
                     {
@@ -158,6 +162,7 @@ namespace DelugeSync
                     }
                     #endregion
 
+                    _logger.LogInformation("Moving file from temporary location");
                     #region move to real location if temp file location is specified
                     if (!string.IsNullOrEmpty(tempFolderPath))
                     {
