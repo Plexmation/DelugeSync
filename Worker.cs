@@ -140,12 +140,12 @@ namespace DelugeSync
                     {
                         foundProfile = true;
                         var url = message.GetUrl(x.searchCriteria, httpProfile.BaseUrl).ToString();
-                        bool subdir = createSubDirectories;
-                        if (message.IsSingle != null && message.IsSingle == true)
-                        {
-                            subdir = false;
-                        }
-                        StartDownload(url, x, channel, e, subdir);
+                        //bool subdir = createSubDirectories;
+                        //if (message.IsSingle != null && message.IsSingle == true)
+                        //{
+                        //    subdir = false;
+                        //}
+                        StartDownload(url, x, channel, e);
                     }
                 });
 
@@ -160,12 +160,12 @@ namespace DelugeSync
 
         }
 
-        private async Task StartDownload(string url,FileProfileSetting fileProfile, IModel channel, BasicDeliverEventArgs eventArgs, bool createSubDir)
+        private async Task StartDownload(string url,FileProfileSetting fileProfile, IModel channel, BasicDeliverEventArgs eventArgs)
         {
             try
             {
-                var filename = DelugeMessage.GetFilenameFromDownloadUrl(url, localSaveLocation, fileProfile.searchCriteria, createSubDir);
-                var tempFilename = DelugeMessage.GetFilenameFromDownloadUrl(url, tempSaveLocation, fileProfile.searchCriteria, createSubDir);
+                var filename = DelugeMessage.GetFilenameFromDownloadUrl(url, localSaveLocation, fileProfile.searchCriteria, createSubDirectories);
+                var tempFilename = DelugeMessage.GetFilenameFromDownloadUrl(url, tempSaveLocation, fileProfile.searchCriteria, createSubDirectories);
                 var result = await DownloadService.DownloadAsync(fileUrl: url, destinationFolderPath: filename, numberOfParallelDownloads: httpProfile.DownloadChunks, credentials: httpCredentials, tempFolderPath: tempFilename);
                 if (result == null)
                 {
@@ -178,9 +178,7 @@ namespace DelugeSync
                         $"\nFile Path: {result.FilePath}" +
                         $"\nParallel: {result.ParallelDownloads}" +
                         $"\nSize: {Math.Round((double) (result.Size / 1000000),2)} MB");
-                    //_logger.LogInformation($"File Path: {result.FilePath}");
-                    //_logger.LogInformation($"Parallel: {result.ParallelDownloads}");
-                    //_logger.LogInformation($"Size: {result.Size} bytes");
+
                     channel.BasicAck(deliveryTag: eventArgs.DeliveryTag, multiple: false);
                 }
             } catch (Exception ex)

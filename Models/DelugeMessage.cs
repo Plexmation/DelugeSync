@@ -80,7 +80,7 @@ namespace DelugeSync.Models
                 var newUrl = "";
                 if (includeFolder)
                 {
-                    string subDirectory = SanitiseEnd(baseLocation) + $"/{searchCriteria}/";
+                    string subDirectory = SanitiseEnd(baseLocation) + $"/{searchCriteria}/{UrlSegments[UrlSegments.Length - 2]}/";
                     newUrl = subDirectory + sanUrl.Substring(startIndex, sanUrl.Length - startIndex);
                     if (!Directory.Exists(subDirectory)) Directory.CreateDirectory(subDirectory); 
                 }
