@@ -45,9 +45,9 @@ then
     find "${srcPath}" -mindepth 1 \( -name '*.mkv' -o -name '*.avi' -o -name '*.mp4' \) -print0 |  while read -d $'\0' nonRarFile
     do
     echo "un/nonrarred file: $nonRarFile" >> rar.log
-        send_to_rabbit $nonRarFile
+        send_to_rabbit "${nonRarFile}" false
     done
 else
     echo "single file src ${srcPath} dst ${destPath}" >> rar.log
-    send_to_rabbit $srcPath true
+    send_to_rabbit "${srcPath}" true
 fi
