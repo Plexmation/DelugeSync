@@ -1,7 +1,7 @@
 version: "3"
 services:
   delugesync-local:
-    container_name: delugesync-local
+    container_name: delugesync
     image: ghcr.io/plexmation/delugesync:master
     networks:
       - delugesync0
