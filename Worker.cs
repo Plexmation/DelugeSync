@@ -121,7 +121,7 @@ namespace DelugeSync
                 _logger.LogError(ex.Message + "\n" + ex.StackTrace);
             }
         }
-        private async Task OnReceiveEventAsync(object sender, BasicDeliverEventArgs e)
+        public async Task OnReceiveEventAsync(object sender, BasicDeliverEventArgs e)
         {
             try
             {
