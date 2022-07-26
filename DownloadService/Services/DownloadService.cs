@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using DownloadService.Models.Settings;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -10,29 +11,19 @@ using System.Threading.Tasks;
 
 namespace DelugeSync
 {
-    public static class DownloadService
+    public class DownloadService
     {
-        public static ILogger _logger;
-        public static int IdleConnectionSeconds = 10;
+        public ILogger _logger;
+        public DownloadSettings _settings;
         public static int DownloadChunks = 4;
-        public static int MaxConnections = 8;
-        public static bool NagleAlgorithm = true; //enabled by default
 
-        //beta options
-        public static bool BetaOptions = false;
-        public static bool UnsafeAuthenticatedConnectionSharing = true;
-        public static bool PreAuthenticate = true;
-        public static bool AllowWriteStreamBuffering = false;
-        public static bool Pipelined = false;
-        static DownloadService()
+        public DownloadService(ILogger logger, DownloadSettings downloadSettings)
         {
-            ServicePointManager.Expect100Continue = false;
-            ServicePointManager.UseNagleAlgorithm = NagleAlgorithm;
-            ServicePointManager.DefaultConnectionLimit = MaxConnections;
-            ServicePointManager.MaxServicePointIdleTime = (IdleConnectionSeconds * 1000);
-            //ServicePointManager.ReusePort = false;
+            _logger = logger;
+            _settings = downloadSettings;
+            _settings.DefaultServicePointSettings.InitServicePointSettings();
         }
-        public static async Task<DownloadResult> DownloadAsync(string fileUrl, string destinationFolderPath, int numberOfParallelDownloads = 0, bool validateSSL = false, NetworkCredential credentials = null, string tempFolderPath = null)
+        public async Task<DownloadResult> DownloadAsync(string fileUrl, string destinationFolderPath, int numberOfParallelDownloads = 0, bool validateSSL = false, NetworkCredential credentials = null, string tempFolderPath = null)
         {
             try
             {
@@ -117,12 +108,12 @@ namespace DelugeSync
                             HttpWebRequest httpWebRequest = HttpWebRequest.Create(fileUrl) as HttpWebRequest;
                             httpWebRequest.Method = "GET";
                             httpWebRequest.Proxy = null;
-                            if (BetaOptions)
+                            if (_settings.EnableBetaOptions)
                             {
-                                httpWebRequest.UnsafeAuthenticatedConnectionSharing = UnsafeAuthenticatedConnectionSharing;
-                                httpWebRequest.PreAuthenticate = PreAuthenticate;
-                                httpWebRequest.AllowWriteStreamBuffering = AllowWriteStreamBuffering;
-                                httpWebRequest.Pipelined = Pipelined;
+                                httpWebRequest.UnsafeAuthenticatedConnectionSharing = _settings.BetaOptions.UnsafeAuthenticatedConnectionSharing;
+                                httpWebRequest.PreAuthenticate = _settings.BetaOptions.PreAuthenticate;
+                                httpWebRequest.AllowWriteStreamBuffering = _settings.BetaOptions.AllowWriteStreamBuffering;
+                                httpWebRequest.Pipelined = _settings.BetaOptions.Pipelined;
     }
                             if (credentials != null)
                             {

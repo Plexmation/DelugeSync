@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Worker">
+﻿<Project Sdk="Microsoft.NET.Sdk.Worker">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
@@ -22,5 +22,9 @@
     <Folder Include="files\radarr\" />
     <Folder Include="files\sonarr\" />
     <Folder Include="temp\sonarr\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DownloadService\DownloadService.csproj" />
   </ItemGroup>
 </Project>
