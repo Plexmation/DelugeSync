@@ -9,9 +9,10 @@ namespace DownloadService.Models.Settings
     public class DownloadSettings
     {
         public int DownloadChunks { get; set; } = 4;
+        public bool ValidateSSL { get; set; } = false;
         public bool EnableBetaOptions { get; set; } = false;
         public BetaOptions BetaOptions { get; set; } = new BetaOptions();
-        public DefaultServicePointSettings DefaultServicePointSettings { get; set; } = new DefaultServicePointSettings();
+        public ServicePointSettings ServicePointSettings { get; set; } = new ServicePointSettings();
     }
     public class BetaOptions
     {

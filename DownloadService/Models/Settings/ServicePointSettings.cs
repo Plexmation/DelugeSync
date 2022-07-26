@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace DownloadService.Models.Settings
 {
-    public class DefaultServicePointSettings
+    public class ServicePointSettings
     {
         public static bool Expect100Continue { get; set; } = false;
         public static bool UseNagleAlgorithm { get; set; } = true;

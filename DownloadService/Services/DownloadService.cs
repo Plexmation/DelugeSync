@@ -1,4 +1,5 @@
 ﻿using DownloadService.Models.Settings;
+using DownloadService.Services;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Concurrent;
@@ -11,28 +12,21 @@ using System.Threading.Tasks;
 
 namespace DelugeSync
 {
-    public class DownloadService
+    public class DownloadService : BaseService
     {
-        public ILogger _logger;
-        public DownloadSettings _settings;
-        public static int DownloadChunks = 4;
+        private DownloadSettings _settings;
 
-        public DownloadService(ILogger logger, DownloadSettings downloadSettings)
+        public DownloadService(ILogger logger, DownloadSettings downloadSettings) : base(logger)
         {
-            _logger = logger;
             _settings = downloadSettings;
-            _settings.DefaultServicePointSettings.InitServicePointSettings();
+            _settings.ServicePointSettings.InitServicePointSettings();
         }
-        public async Task<DownloadResult> DownloadAsync(string fileUrl, string destinationFolderPath, int numberOfParallelDownloads = 0, bool validateSSL = false, NetworkCredential credentials = null, string tempFolderPath = null)
+        public int DownloadChunks { get; set; } = 4;
+
+        public async Task<DownloadResult> DownloadAsync(string fileUrl, string destinationFolderPath, NetworkCredential credentials = null, string tempFolderPath = null)
         {
             try
             {
-                if (!validateSSL)
-                {
-                    _logger.LogInformation("Validating SSL");
-                    ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
-                }
-
                 Uri uri = new Uri(fileUrl);
                 string destinationFilePath;
                 if (!string.IsNullOrEmpty(tempFolderPath))
@@ -44,12 +38,6 @@ namespace DelugeSync
                 }
 
                 DownloadResult result = new DownloadResult() { FilePath = destinationFilePath };
-
-                //Basically parallel downloads must = chunks
-                if (numberOfParallelDownloads <= 0)
-                {
-                    numberOfParallelDownloads = DownloadChunks;
-                }
 
                 _logger.LogInformation("Requesting file information from server");
                 #region Get file size  
@@ -76,12 +64,12 @@ namespace DelugeSync
                     _logger.LogInformation("Calculating ranges");
                     #region Calculate ranges  
                     List<Range> readRanges = new List<Range>();
-                    for (int chunk = 0; chunk < numberOfParallelDownloads - 1; chunk++)
+                    for (int chunk = 0; chunk < DownloadChunks - 1; chunk++)
                     {
                         var range = new Range()
                         {
-                            Start = chunk * (responseLength / numberOfParallelDownloads),
-                            End = ((chunk + 1) * (responseLength / numberOfParallelDownloads)) - 1
+                            Start = chunk * (responseLength / DownloadChunks),
+                            End = ((chunk + 1) * (responseLength / DownloadChunks)) - 1
                         };
                         readRanges.Add(range);
                     }
@@ -101,7 +89,7 @@ namespace DelugeSync
                     #region Parallel download  
 
                     int index = 0;
-                    await Parallel.ForEachAsync(readRanges, new ParallelOptions() { MaxDegreeOfParallelism = numberOfParallelDownloads }, async (readRange, cancellationToken) =>
+                    await Parallel.ForEachAsync(readRanges, new ParallelOptions() { MaxDegreeOfParallelism = DownloadChunks }, async (readRange, cancellationToken) =>
                     {
                         try
                         {
